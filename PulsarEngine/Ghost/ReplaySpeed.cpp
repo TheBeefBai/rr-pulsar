@@ -39,6 +39,18 @@ u8 GetGhostReplaySpeedIdx() {
 	return replaySpeedIdx;
 }
 
+static float GetGhostReplaySpeedMultiplier() {
+	if (!IsWatchingGhostReplay())
+		return 1.0f;
+	static const float speedMultipliers[] = {0.25f, 0.5f, 1.0f, 2.0f};
+	return speedMultipliers[replaySpeedIdx];
+}
+
+bool IsReplayMusicSpeedupWindowOpen(const Timer &elapsedTime) {
+	const u32 elapsedTimeMs = (elapsedTime.minutes * 60 + elapsedTime.seconds) * 1000 + elapsedTime.milliseconds;
+	return elapsedTimeMs < 5000.0f * GetGhostReplaySpeedMultiplier();
+}
+
 u32 GetGhostReplaySpeedChangeCount() {
 	return replaySpeedChangeCount;
 }
@@ -157,6 +169,16 @@ static void ReplayPauseOnUpdate(Pages::GhostReplayPause &page) {
 	UpdateReplaySpeedFromController();
 }
 kmWritePointer(0x808bdb58, ReplayPauseOnUpdate);
+
+kmRuntimeUse(0x805a9bec);
+static void ReplayCameraUpdate(void *camera, bool isPaused) {
+	void (*original)(void *, bool) = reinterpret_cast<void (*)(void *, bool)>(kmRuntimeAddr(0x805a9bec));
+	const bool isReplay = IsWatchingGhostReplay();
+	original(camera, isPaused || (isReplay && replaySimulationTicks == 0));
+	if (isReplay && !isPaused && replaySimulationTicks > 1)
+		original(camera, false);
+}
+kmWritePointer(0x808b6c80, ReplayCameraUpdate);
 
 namespace UI {
 static const u8 kReplaySpeedFadeFrames = 20;
