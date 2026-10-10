@@ -2691,3 +2691,4 @@ SetNumTevStages__2GXFUc = 0x801722a8
 LoadPosMtxImm__2GXFPA4_CfUi = 0x8017310c
 SetCurrentMtx__2GXFUi = 0x80173214
 IsRespawning__Q24Kart4LinkCFv = 0x80591314
+GetControllerHolderByIdx__10SectionPadFUi = 0x8061bdbc
